@@ -3,7 +3,7 @@
 Site estático (HTML5 + CSS3 + JavaScript puro) para divulgar o projeto científico
 de Gabriel Zorzetti e vender números de uma rifa que financia sua participação
 nas feiras FEBIC e FENECIT 2026. Os dados são armazenados no Firebase Firestore,
-e o painel administrativo usa Firebase Authentication.
+e o painel administrativo usa Firebase Authentication. 
 
 Nenhum framework, bundler ou dependência via npm é usado. O Firebase é carregado
 diretamente do CDN oficial do Google (`gstatic.com`) através de `<script type="module">`,
