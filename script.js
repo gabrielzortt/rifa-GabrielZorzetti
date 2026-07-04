@@ -59,6 +59,8 @@ function preencherConfigEstatico() {
 
   const footerWpp = document.getElementById("footerWhatsapp");
   footerWpp.href = linkWhatsapp(`Olá! Tenho uma dúvida sobre a rifa de ${CONFIG.nome}.`);
+   const btnComprovanteDireto = document.getElementById("btnEnviarComprovanteDireto");
+  btnComprovanteDireto.href = linkWhatsapp(`Olá! Vou enviar o comprovante do meu Pix da rifa de ${CONFIG.nome}.`);
 
   const qrImgs = document.querySelectorAll(".pix-box__qr");
   qrImgs.forEach((img) => (img.src = CONFIG.pix.qrCodeImagem));
