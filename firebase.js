@@ -28,6 +28,7 @@ import {
   where,
   onSnapshot,
   serverTimestamp,
+    writeBatch,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth,
@@ -109,6 +110,52 @@ async function reservarNumero(numero, dadosComprador) {
   });
 }
 
+/** Reserva vários números de uma vez, com um Pix único para o total.
+ *  Todos os números recebem o mesmo grupoId, para o painel admin poder
+ *  confirmar o pagamento de todos juntos com um clique. */
+async function reservarNumeros(numeros, dadosComprador) {
+  // Confere disponibilidade de todos antes de gravar qualquer coisa
+  for (const numero of numeros) {
+    const ref = doc(db, "numeros", String(numero));
+    const atual = await getDoc(ref);
+    if (atual.exists() && atual.data().status !== "disponivel") {
+      throw new Error(`O número ${numero} não está mais disponível. Atualize a página e escolha outro.`);
+    }
+  }
+
+  const grupoId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const batch = writeBatch(db);
+
+  numeros.forEach((numero) => {
+    const ref = doc(db, "numeros", String(numero));
+    batch.set(ref, {
+      numero: Number(numero),
+      status: "reservado",
+      grupoId,
+      nome: dadosComprador.nome,
+      whatsapp: dadosComprador.whatsapp,
+      cidade: dadosComprador.cidade,
+      estado: dadosComprador.estado,
+      email: dadosComprador.email || "",
+      criadoEm: serverTimestamp(),
+      atualizadoEm: serverTimestamp(),
+    });
+  });
+
+  await batch.commit();
+  return grupoId;
+}
+
+/** Painel admin: marca todos os números de um mesmo grupo (mesmo checkout) como vendidos de uma vez. */
+async function marcarGrupoComoVendido(grupoId, numeros) {
+  const batch = writeBatch(db);
+  numeros.forEach((numero) => {
+    const ref = doc(db, "numeros", String(numero));
+    batch.update(ref, { status: "vendido", atualizadoEm: serverTimestamp() });
+  });
+  await batch.commit();
+}
+
 /** Painel admin: marca um número como vendido (pagamento aprovado). */
 async function marcarComoVendido(numero) {
   const ref = doc(db, "numeros", String(numero));
@@ -179,7 +226,9 @@ export {
   escutarNumeros,
   buscarNumero,
   reservarNumero,
+  reservarNumeros,
   marcarComoVendido,
+  marcarGrupoComoVendido,
   liberarNumero,
   listarCompradores,
   buscarConfigRemota,
