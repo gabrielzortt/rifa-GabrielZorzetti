@@ -368,9 +368,8 @@ input { font-family: inherit; }
 .rifa__pagination button:hover:not(:disabled) { background: rgba(248,244,234,0.08); }
 .rifa__pagination span { font-family: var(--font-mono); font-size: 0.85rem; color: rgba(248,244,234,0.7); }
 .numero-ticket--selecionado {
-  border-style: solid; border-color: var(--teal-light); background: rgba(29,107,87,0.35); color: var(--parchment);
+  border-style: solid; border-color: var(--brass); background: rgba(184,134,58,0.3); color: var(--brass-light);
 }
-
 .selecao-bar {
   position: sticky; bottom: 0; z-index: 20;
   background: var(--ink-light); border-top: 1px solid var(--line-light);
