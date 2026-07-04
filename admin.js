@@ -5,6 +5,7 @@ import {
   logoutAdmin,
   listarCompradores,
   marcarComoVendido,
+  marcarGrupoComoVendido,
   liberarNumero,
   buscarConfigRemota,
   salvarConfigRemota,
@@ -139,7 +140,7 @@ function renderTabela() {
     lista = lista.filter((c) => String(c.numero) === String(Number(numeroFiltro)));
   }
 
-  const tbody = document.getElementById("tabelaCompradores");
+const tbody = document.getElementById("tabelaCompradores");
   if (!lista.length) {
     tbody.innerHTML = somentePendentes
       ? `<tr><td colspan="7" class="admin__vazio">Nenhum pagamento pendente de confirmação. 🎉</td></tr>`
@@ -147,38 +148,61 @@ function renderTabela() {
     return;
   }
 
+  // Agrupa números reservados que pertencem à mesma compra (mesmo grupoId)
+  const numerosPorGrupo = {};
+  compradoresCache.forEach((c) => {
+    if (c.status === "reservado" && c.grupoId) {
+      (numerosPorGrupo[c.grupoId] ||= []).push(c.numero);
+    }
+  });
+
   tbody.innerHTML = lista
-    .map(
-      (c) => `
+    .map((c) => {
+      const grupo = c.grupoId ? numerosPorGrupo[c.grupoId] : null;
+      const ehGrupo = grupo && grupo.length > 1;
+      const acaoVender =
+        c.status === "reservado"
+          ? ehGrupo
+            ? `<button class="btn btn--solid btn--sm" data-acao="vender-grupo" data-grupo="${c.grupoId}">Marcar pago (${grupo.length} números)</button>`
+            : `<button class="btn btn--solid btn--sm" data-acao="vender" data-numero="${c.numero}">Marcar pago</button>`
+          : "";
+      return `
     <tr>
-      <td>${formatarNumero(c.numero)}</td>
+      <td>${formatarNumero(c.numero)}${ehGrupo ? ` <span class="grupo-tag" title="Comprados juntos: ${grupo.map(formatarNumero).join(', ')}">grupo</span>` : ""}</td>
       <td><span class="status-badge status-badge--${c.status}">${c.status === "vendido" ? "Vendido" : "Reservado"}</span></td>
       <td>${c.nome || "—"}</td>
       <td>${c.whatsapp || "—"}</td>
       <td>${[c.cidade, c.estado].filter(Boolean).join(" / ") || "—"}</td>
       <td>${c.email || "—"}</td>
       <td class="acoes">
-        ${
-          c.status === "reservado"
-            ? `<button class="btn btn--solid btn--sm" data-acao="vender" data-numero="${c.numero}">Marcar pago</button>`
-            : ""
-        }
+        ${acaoVender}
         <button class="btn btn--outline btn--sm" data-acao="liberar" data-numero="${c.numero}">Liberar</button>
       </td>
-    </tr>`
-    )
+    </tr>`;
+    })
     .join("");
 
   tbody.querySelectorAll("[data-acao]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const numero = Number(btn.dataset.numero);
       const acao = btn.dataset.acao;
       if (acao === "vender") {
+        const numero = Number(btn.dataset.numero);
         confirmarAcao(`Marcar o número ${formatarNumero(numero)} como vendido (pagamento aprovado)?`, async () => {
           await marcarComoVendido(numero);
           await carregarCompradores();
         });
+      } else if (acao === "vender-grupo") {
+        const grupoId = btn.dataset.grupo;
+        const numeros = numerosPorGrupo[grupoId] || [];
+        confirmarAcao(
+          `Marcar os números ${numeros.map(formatarNumero).join(", ")} como vendidos (pagamento único aprovado)?`,
+          async () => {
+            await marcarGrupoComoVendido(grupoId, numeros);
+            await carregarCompradores();
+          }
+        );
       } else {
+        const numero = Number(btn.dataset.numero);
         confirmarAcao(`Liberar o número ${formatarNumero(numero)}? Ele voltará a ficar disponível e os dados do comprador serão apagados.`, async () => {
           await liberarNumero(numero);
           await carregarCompradores();
