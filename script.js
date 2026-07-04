@@ -133,7 +133,7 @@ function statusDoNumero(numero) {
   return dado ? dado.status : "disponivel";
 }
 
-function renderGrid() {
+
  function renderGrid() {
   const grid = document.getElementById("numerosGrid");
   const inicio = paginaAtual * NUMEROS_POR_PAGINA;
@@ -179,7 +179,7 @@ function renderBarraSelecao() {
   const total = qtd * CONFIG.rifa.valorPorNumero;
   document.getElementById("selecaoResumo").textContent =
     `${qtd} número${qtd > 1 ? "s" : ""} selecionado${qtd > 1 ? "s" : ""} · Total: ${formatarMoeda(total)}`;
-}
+
 }
 
 function renderPaginacao() {
