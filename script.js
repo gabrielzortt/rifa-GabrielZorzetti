@@ -1,11 +1,12 @@
 import CONFIG from "./config.js";
-import { escutarNumeros, reservarNumero, buscarConfigRemota } from "./firebase.js";
+import { escutarNumeros, reservarNumeros, buscarConfigRemota } from "./firebase.js";
 
 /* ============================================================
    ESTADO
    ============================================================ */
 let mapaNumeros = {};       // { "0001": {status, nome, ...} }
 let paginaAtual = 0;
+let numerosSelecionados = new Set();
 const NUMEROS_POR_PAGINA = 100;
 let totalNumeros = CONFIG.rifa.quantidadeNumeros;
 let totalPaginas = Math.ceil(totalNumeros / NUMEROS_POR_PAGINA);
@@ -133,6 +134,7 @@ function statusDoNumero(numero) {
 }
 
 function renderGrid() {
+ function renderGrid() {
   const grid = document.getElementById("numerosGrid");
   const inicio = paginaAtual * NUMEROS_POR_PAGINA;
   const fim = Math.min(inicio + NUMEROS_POR_PAGINA, totalNumeros);
@@ -140,16 +142,44 @@ function renderGrid() {
   let html = "";
   for (let n = inicio; n < fim; n++) {
     const status = statusDoNumero(n);
+    const selecionado = numerosSelecionados.has(n);
     const disabled = status !== "disponivel" ? "disabled" : "";
-    html += `<button class="numero-ticket numero-ticket--${status}" data-numero="${n}" ${disabled}>${formatarNumero(n)}</button>`;
+    const classeExtra = selecionado ? " numero-ticket--selecionado" : "";
+    html += `<button class="numero-ticket numero-ticket--${status}${classeExtra}" data-numero="${n}" ${disabled}>${formatarNumero(n)}</button>`;
   }
   grid.innerHTML = html;
 
   grid.querySelectorAll(".numero-ticket:not([disabled])").forEach((btn) => {
-    btn.addEventListener("click", () => abrirModalReserva(Number(btn.dataset.numero)));
+    btn.addEventListener("click", () => alternarSelecao(Number(btn.dataset.numero)));
   });
 
   renderPaginacao();
+}
+
+function alternarSelecao(numero) {
+  if (numerosSelecionados.has(numero)) {
+    numerosSelecionados.delete(numero);
+  } else {
+    numerosSelecionados.add(numero);
+  }
+  renderGrid();
+  renderBarraSelecao();
+}
+
+function renderBarraSelecao() {
+  const bar = document.getElementById("selecaoBar");
+  const qtd = numerosSelecionados.size;
+
+  if (qtd === 0) {
+    bar.hidden = true;
+    return;
+  }
+
+  bar.hidden = false;
+  const total = qtd * CONFIG.rifa.valorPorNumero;
+  document.getElementById("selecaoResumo").textContent =
+    `${qtd} número${qtd > 1 ? "s" : ""} selecionado${qtd > 1 ? "s" : ""} · Total: ${formatarMoeda(total)}`;
+}
 }
 
 function renderPaginacao() {
@@ -185,11 +215,16 @@ function irParaNumero(numero) {
 /* ============================================================
    MODAL: RESERVAR NÚMERO
    ============================================================ */
-let numeroSelecionado = null;
+/* ============================================================
+   MODAL: RESERVAR NÚMERO(S)
+   ============================================================ */
+function abrirModalReserva() {
+  const numeros = [...numerosSelecionados].sort((a, b) => a - b);
+  if (numeros.length === 0) return;
 
-function abrirModalReserva(numero) {
-  numeroSelecionado = numero;
-  document.getElementById("modalNumero").textContent = formatarNumero(numero);
+  const total = numeros.length * CONFIG.rifa.valorPorNumero;
+  document.getElementById("modalNumerosLista").textContent = numeros.map(formatarNumero).join(", ");
+  document.getElementById("modalTotalReserva").textContent = formatarMoeda(total);
   document.getElementById("formReserva").reset();
   document.getElementById("formErro").hidden = true;
   document.getElementById("modalReserva").hidden = false;
@@ -198,7 +233,6 @@ function abrirModalReserva(numero) {
 
 function fecharModalReserva() {
   document.getElementById("modalReserva").hidden = true;
-  numeroSelecionado = null;
 }
 
 async function confirmarReserva(evento) {
@@ -207,6 +241,7 @@ async function confirmarReserva(evento) {
   const erroEl = document.getElementById("formErro");
   erroEl.hidden = true;
 
+  const numeros = [...numerosSelecionados].sort((a, b) => a - b);
   const dados = {
     nome: document.getElementById("campoNome").value.trim(),
     whatsapp: document.getElementById("campoWhatsapp").value.trim(),
@@ -219,11 +254,13 @@ async function confirmarReserva(evento) {
   btn.textContent = "Reservando...";
 
   try {
-    await reservarNumero(numeroSelecionado, dados);
+    await reservarNumeros(numeros, dados);
     fecharModalReserva();
-    abrirModalPagamento(numeroSelecionado);
+    abrirModalPagamento(numeros);
+    numerosSelecionados.clear();
+    renderBarraSelecao();
   } catch (err) {
-    erroEl.textContent = err.message || "Não foi possível reservar este número. Tente outro.";
+    erroEl.textContent = err.message || "Não foi possível reservar. Atualize a página e tente novamente.";
     erroEl.hidden = false;
   } finally {
     btn.disabled = false;
@@ -234,9 +271,14 @@ async function confirmarReserva(evento) {
 /* ============================================================
    MODAL: PAGAMENTO
    ============================================================ */
-function abrirModalPagamento(numero) {
-  document.getElementById("pagamentoNumero").textContent = formatarNumero(numero);
-  const mensagem = `Olá! Acabei de reservar o número ${formatarNumero(numero)} da rifa de ${CONFIG.nome} e vou enviar o comprovante do Pix.`;
+function abrirModalPagamento(numeros) {
+  const total = numeros.length * CONFIG.rifa.valorPorNumero;
+  const numerosTexto = numeros.map(formatarNumero).join(", ");
+
+  document.getElementById("pagamentoNumerosLista").textContent = numerosTexto;
+  document.getElementById("pixValor").textContent = formatarMoeda(total);
+
+  const mensagem = `Olá! Acabei de reservar ${numeros.length > 1 ? "os números" : "o número"} ${numerosTexto} da rifa de ${CONFIG.nome} (total ${formatarMoeda(total)}) e vou enviar o comprovante do Pix.`;
   document.getElementById("linkWhatsappComprovante").href = linkWhatsapp(mensagem);
   document.getElementById("modalPagamento").hidden = false;
 }
@@ -291,6 +333,13 @@ function initEventos() {
   document.getElementById("fecharModalPagamento").addEventListener("click", fecharModalPagamento);
   document.getElementById("formReserva").addEventListener("submit", confirmarReserva);
   document.getElementById("btnCopiarPix").addEventListener("click", copiarChavePix);
+
+   document.getElementById("btnLimparSelecao").addEventListener("click", () => {
+    numerosSelecionados.clear();
+    renderGrid();
+    renderBarraSelecao();
+  });
+  document.getElementById("btnReservarSelecionados").addEventListener("click", abrirModalReserva);
 
   document.getElementById("btnBuscarNumero").addEventListener("click", () => {
     irParaNumero(Number(document.getElementById("buscaNumero").value));
