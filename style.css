@@ -367,7 +367,27 @@ input { font-family: inherit; }
 .rifa__pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
 .rifa__pagination button:hover:not(:disabled) { background: rgba(248,244,234,0.08); }
 .rifa__pagination span { font-family: var(--font-mono); font-size: 0.85rem; color: rgba(248,244,234,0.7); }
+.numero-ticket--selecionado {
+  border-style: solid; border-color: var(--teal-light); background: rgba(29,107,87,0.35); color: var(--parchment);
+}
 
+.selecao-bar {
+  position: sticky; bottom: 0; z-index: 20;
+  background: var(--ink-light); border-top: 1px solid var(--line-light);
+  margin-top: 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.25);
+}
+.selecao-bar__inner {
+  max-width: var(--max-width); margin: 0 auto; padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.selecao-bar__resumo { font-family: var(--font-mono); color: var(--parchment); font-size: 0.95rem; }
+.selecao-bar__acoes { display: flex; gap: 10px; }
+
+.modal__numeros-lista {
+  font-family: var(--font-mono); font-size: 0.95rem; color: var(--ink-text);
+  background: var(--parchment-deep); border-radius: var(--radius-s); padding: 10px 14px; margin: 0 0 16px;
+  word-break: break-word;
+}
 /* ============================================================
    MODAIS
    ============================================================ */
