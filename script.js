@@ -128,7 +128,7 @@ function preencherFaq() {
    GRADE DE NÚMEROS
    ============================================================ */
 function statusDoNumero(numero) {
-  const dado = mapaNumeros[formatarNumero(numero)];
+  const dado = mapaNumeros[String(numero)];
   return dado ? dado.status : "disponivel";
 }
 
