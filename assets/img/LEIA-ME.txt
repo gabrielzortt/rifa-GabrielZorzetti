@@ -1,0 +1,3 @@
+Coloque aqui suas imagens (logo.png, hero.jpg, perfil.jpg, qrcode-pix.png,
+premio1.jpg, premio2.jpg etc.) com os mesmos nomes referenciados em config.js,
+ou adicione novos arquivos e atualize os caminhos em config.js.
