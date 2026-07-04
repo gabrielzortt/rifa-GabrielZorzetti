@@ -133,8 +133,7 @@ function statusDoNumero(numero) {
   return dado ? dado.status : "disponivel";
 }
 
-
- function renderGrid() {
+function renderGrid() {
   const grid = document.getElementById("numerosGrid");
   const inicio = paginaAtual * NUMEROS_POR_PAGINA;
   const fim = Math.min(inicio + NUMEROS_POR_PAGINA, totalNumeros);
@@ -179,7 +178,6 @@ function renderBarraSelecao() {
   const total = qtd * CONFIG.rifa.valorPorNumero;
   document.getElementById("selecaoResumo").textContent =
     `${qtd} número${qtd > 1 ? "s" : ""} selecionado${qtd > 1 ? "s" : ""} · Total: ${formatarMoeda(total)}`;
-
 }
 
 function renderPaginacao() {
@@ -212,9 +210,6 @@ function irParaNumero(numero) {
   });
 }
 
-/* ============================================================
-   MODAL: RESERVAR NÚMERO
-   ============================================================ */
 /* ============================================================
    MODAL: RESERVAR NÚMERO(S)
    ============================================================ */
@@ -334,7 +329,7 @@ function initEventos() {
   document.getElementById("formReserva").addEventListener("submit", confirmarReserva);
   document.getElementById("btnCopiarPix").addEventListener("click", copiarChavePix);
 
-   document.getElementById("btnLimparSelecao").addEventListener("click", () => {
+  document.getElementById("btnLimparSelecao").addEventListener("click", () => {
     numerosSelecionados.clear();
     renderGrid();
     renderBarraSelecao();
