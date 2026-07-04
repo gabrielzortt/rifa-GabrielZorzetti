@@ -21,6 +21,13 @@ admin.css          → estilos do painel administrativo
 script.js          → lógica do site principal
 admin.js           → lógica do painel administrativo
 firebase.js        → inicialização do Firebase e funções do Firestore/Auth
+
+
+
+
+
+
+foram feitas mudanças, misturando,a arquivo, claude e chat gpr
 config.js          → TODAS as configurações editáveis (nome, Pix, prêmios, etc.)
 assets/
   cartas/           → imagens das cartas de aceite (FEBIC e FENECIT)
