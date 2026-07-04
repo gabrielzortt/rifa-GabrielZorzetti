@@ -215,9 +215,8 @@
       <p class="eyebrow eyebrow--light">Participar</p>
       <h2 class="section__title section__title--light">Escolha um número</h2>
       <p class="section__intro section__intro--light">
-        Cada número custa <strong id="valorNumeroTexto">R$ 15,00</strong>. Toque em um número
-        disponível para reservá-lo.
-      </p>
+      Cada número custa <strong id="valorNumeroTexto">R$ 10,00</strong>. Toque em quantos números
+        disponíveis quiser — você pode reservar vários de uma vez e pagar tudo com um único Pix.
 
       <div class="rifa__toolbar">
         <div class="rifa__legend">
@@ -232,18 +231,29 @@
         </div>
       </div>
 
-      <div id="numerosGrid" class="numeros-grid" aria-live="polite"></div>
+<div id="numerosGrid" class="numeros-grid" aria-live="polite"></div>
 
       <div class="rifa__pagination" id="rifaPaginacao"></div>
     </div>
-  </section>
 
+    <div class="selecao-bar" id="selecaoBar" hidden>
+      <div class="selecao-bar__inner">
+        <span class="selecao-bar__resumo" id="selecaoResumo">0 números selecionados</span>
+        <div class="selecao-bar__acoes">
+          <button class="btn btn--outline-light btn--sm" id="btnLimparSelecao">Limpar</button>
+          <button class="btn btn--solid" id="btnReservarSelecionados">Reservar números</button>
+        </div>
+      </div>
+    </div>
+  </section>
   <!-- ===================== MODAL: RESERVAR NÚMERO ===================== -->
   <div class="modal-overlay" id="modalReserva" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalReservaTitulo">
       <button class="modal__close" id="fecharModalReserva" aria-label="Fechar">×</button>
-      <p class="eyebrow">Número <span id="modalNumero">0000</span></p>
-      <h3 id="modalReservaTitulo">Reservar este número</h3>
+<p class="eyebrow">Números selecionados</p>
+      <p class="modal__numeros-lista" id="modalNumerosLista">0000, 0001</p>
+      <h3 id="modalReservaTitulo">Reservar estes números</h3>
+      <p class="modal__text">Total: <strong id="modalTotalReserva">R$ 0,00</strong></p>
       <form id="formReserva" class="form">
         <label>Nome completo
           <input type="text" id="campoNome" required autocomplete="name">
@@ -272,7 +282,8 @@
   <div class="modal-overlay" id="modalPagamento" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalPagamentoTitulo">
       <button class="modal__close" id="fecharModalPagamento" aria-label="Fechar">×</button>
-      <p class="eyebrow">Número <span id="pagamentoNumero">0000</span> reservado</p>
+<p class="eyebrow">Números reservados</p>
+      <p class="modal__numeros-lista" id="pagamentoNumerosLista">0000</p>
       <h3 id="modalPagamentoTitulo">Finalizar pagamento</h3>
       <p class="modal__text">Escaneie o QR Code ou copie a chave Pix abaixo para concluir o pagamento.</p>
 
