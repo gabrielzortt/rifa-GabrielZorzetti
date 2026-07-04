@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel administrativo — Rifa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<section class="login-screen" id="loginScreen">
+  <form class="login-card" id="formLogin">
+    <span class="brand__mark">GZ</span>
+    <h1>Painel administrativo</h1>
+    <p class="login-card__sub">Acesso restrito. Entre com o e-mail e senha cadastrados no Firebase Authentication.</p>
+    <label>E-mail
+      <input type="email" id="loginEmail" required autocomplete="username">
+    </label>
+    <label>Senha
+      <input type="password" id="loginSenha" required autocomplete="current-password">
+    </label>
+    <p class="login-card__erro" id="loginErro" hidden></p>
+    <button type="submit" class="btn btn--solid btn--full">Entrar</button>
+    <a href="index.html" class="login-card__voltar">← Voltar para o site</a>
+  </form>
+</section>
+
+<!-- ===================== PAINEL ===================== -->
+<div class="admin" id="adminScreen" hidden>
+
+  <header class="admin__topbar">
+    <div class="admin__brand"><span class="brand__mark">GZ</span> Painel da rifa</div>
+    <nav class="admin__tabs">
+      <button class="admin__tab" data-tab="compradores" aria-current="true">Compradores</button>
+      <button class="admin__tab" data-tab="config">Configurações</button>
+    </nav>
+    <button class="btn btn--outline btn--sm" id="btnLogout">Sair</button>
+  </header>
+
+  <main class="admin__main">
+
+    <!-- ---------- ABA: COMPRADORES ---------- -->
+    <section class="admin__panel" id="painelCompradores">
+      <div class="admin__stats">
+        <div class="stat-card">
+          <span class="stat-card__num" id="statDisponiveis">0</span>
+          <span class="stat-card__label">Disponíveis</span>
+        </div>
+        <div class="stat-card stat-card--brass">
+          <span class="stat-card__num" id="statReservados">0</span>
+          <span class="stat-card__label">Reservados</span>
+        </div>
+        <div class="stat-card stat-card--teal">
+          <span class="stat-card__num" id="statVendidos">0</span>
+          <span class="stat-card__label">Vendidos</span>
+        </div>
+        <div class="stat-card stat-card--total">
+          <span class="stat-card__num" id="statArrecadado">R$ 0,00</span>
+          <span class="stat-card__label">Arrecadado (vendidos)</span>
+        </div>
+      </div>
+
+      <div class="admin__toolbar">
+        <input type="search" id="filtroTexto" placeholder="Buscar por nome, WhatsApp ou cidade...">
+        <input type="number" id="filtroNumero" placeholder="Buscar por número..." min="0">
+        <label class="admin__toggle">
+          <input type="checkbox" id="filtroPendentes" checked>
+          Só pendentes de confirmação
+        </label>
+        <button class="btn btn--outline btn--sm" id="btnRecarregar">Recarregar</button>
+      </div>
+
+      <div class="admin__table-wrap">
+        <table class="admin__table">
+          <thead>
+            <tr>
+              <th>Número</th>
+              <th>Status</th>
+              <th>Nome</th>
+              <th>WhatsApp</th>
+              <th>Cidade/UF</th>
+              <th>E-mail</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCompradores">
+            <tr><td colspan="7" class="admin__vazio">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- ABA: CONFIGURAÇÕES ---------- -->
+    <section class="admin__panel" id="painelConfig" hidden>
+      <p class="admin__panel-intro">
+        As alterações salvas aqui têm prioridade sobre os valores padrão de <code>config.js</code>
+        e passam a valer no site imediatamente, sem precisar publicar novamente no GitHub Pages.
+      </p>
+
+      <form class="config-form" id="formConfig">
+        <fieldset>
+          <legend>Pagamento</legend>
+          <label>Chave Pix
+            <input type="text" id="cfgPixChave">
+          </label>
+          <label>Tipo da chave
+            <select id="cfgPixTipo">
+              <option value="CPF">CPF</option>
+              <option value="CNPJ">CNPJ</option>
+              <option value="E-mail">E-mail</option>
+              <option value="Telefone">Telefone</option>
+              <option value="Aleatória">Chave aleatória</option>
+            </select>
+          </label>
+          <label>Valor por número (R$)
+            <input type="number" id="cfgValor" min="0" step="0.01">
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Rifa</legend>
+          <label>Quantidade total de números
+            <input type="number" id="cfgQuantidade" min="1" step="1">
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Contato</legend>
+          <label>WhatsApp (formato internacional, só números — ex: 5592900000000)
+            <input type="text" id="cfgWhatsappNumero">
+          </label>
+          <label>WhatsApp (exibição — ex: (92) 90000-0000)
+            <input type="text" id="cfgWhatsappExibicao">
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Prêmios</legend>
+          <div id="cfgPremiosList" class="config-premios"></div>
+          <button type="button" class="btn btn--outline btn--sm" id="btnAddPremio">+ Adicionar prêmio</button>
+        </fieldset>
+
+        <p class="config-form__msg" id="configMsg" hidden></p>
+        <button type="submit" class="btn btn--solid">Salvar configurações</button>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===================== MODAL: CONFIRMAÇÃO ===================== -->
+<div class="modal-overlay" id="modalConfirm" hidden>
+  <div class="modal-confirm">
+    <p id="modalConfirmTexto">Confirmar ação?</p>
+    <div class="modal-confirm__actions">
+      <button class="btn btn--outline btn--sm" id="modalConfirmCancelar">Cancelar</button>
+      <button class="btn btn--solid btn--sm" id="modalConfirmOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="admin.js"></script>
+</body>
+</html>
