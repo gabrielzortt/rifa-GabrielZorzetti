@@ -7,7 +7,7 @@ e o painel administrativo usa Firebase Authentication.
 
 Nenhum framework, bundler ou dependência via npm é usado. O Firebase é carregado   
 diretamente do CDN oficial do Google (`gstatic.com`) através de `<script type="module">`,
-que é a forma padrão de usar o SDK modular do Firebase sem ferramentas de build.
+que é a forma padrão de usar o SDK modular do Firebase sem ferramentas de build..
 
 ---
 
