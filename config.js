@@ -107,7 +107,7 @@ const CONFIG = {
     },
     {
       pergunta: "Como e quando será feito o sorteio?",
-      resposta: "⚠️ EDITAR — descreva aqui a data prevista e o método do sorteio (ex: Loteria Federal, live no Instagram, etc.)."
+      resposta: "O sorteiro ocorrerá dia 20/08 as 20:00h, pelo perfil: gs_zorzetti"
     },
     {
       pergunta: "O que acontece se eu reservar um número e não pagar?",
