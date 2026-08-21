@@ -1,5 +1,5 @@
 import CONFIG from "./config.js";
-import { escutarNumeros, reservarNumeros, buscarConfigRemota } from "./firebase.js";
+import { escutarNumeros, reservarNumeros, buscarConfigRemota, buscarSorteio } from "./firebase.js";
 
 /* ============================================================
    ESTADO
@@ -7,6 +7,7 @@ import { escutarNumeros, reservarNumeros, buscarConfigRemota } from "./firebase.
 let mapaNumeros = {};       // { "0001": {status, nome, ...} }
 let paginaAtual = 0;
 let numerosSelecionados = new Set();
+let sorteioRealizado = false;
 const NUMEROS_POR_PAGINA = 100;
 let totalNumeros = CONFIG.rifa.quantidadeNumeros;
 let totalPaginas = Math.ceil(totalNumeros / NUMEROS_POR_PAGINA);
@@ -59,8 +60,6 @@ function preencherConfigEstatico() {
 
   const footerWpp = document.getElementById("footerWhatsapp");
   footerWpp.href = linkWhatsapp(`Olá! Tenho uma dúvida sobre a rifa de ${CONFIG.nome}.`);
-   const btnComprovanteDireto = document.getElementById("btnEnviarComprovanteDireto");
-  btnComprovanteDireto.href = linkWhatsapp(`Olá! Vou enviar o comprovante do meu Pix da rifa de ${CONFIG.nome}.`);
 
   const qrImgs = document.querySelectorAll(".pix-box__qr");
   qrImgs.forEach((img) => (img.src = CONFIG.pix.qrCodeImagem));
@@ -128,6 +127,45 @@ function preencherFaq() {
 }
 
 /* ============================================================
+   SORTEIO
+   ============================================================ */
+async function verificarSorteio() {
+  try {
+    const sorteio = await buscarSorteio();
+    if (sorteio && sorteio.realizado) {
+      sorteioRealizado = true;
+      renderVencedores(sorteio.vencedores || []);
+      aplicarBloqueioSorteio();
+      document.getElementById("modalVencedores").hidden = false;
+    }
+  } catch (e) {
+    console.warn("Não foi possível verificar o status do sorteio.", e);
+  }
+}
+
+function renderVencedores(vencedores) {
+  const lista = document.getElementById("listaVencedores");
+  lista.innerHTML = vencedores
+    .map(
+      (v) => `
+    <div class="vencedor-item">
+      <span class="vencedor-item__numero">${formatarNumero(v.numero)}</span>
+      <div class="vencedor-item__info">
+        <span class="vencedor-item__nome">${v.nome}</span>
+        <span class="vencedor-item__premio">${v.premioNome}</span>
+      </div>
+    </div>`
+    )
+    .join("");
+}
+
+function aplicarBloqueioSorteio() {
+  document.getElementById("rifaEncerradaAviso").hidden = false;
+  document.getElementById("rifaIntroTexto").hidden = true;
+  document.getElementById("selecaoBar").hidden = true;
+}
+
+/* ============================================================
    GRADE DE NÚMEROS
    ============================================================ */
 function statusDoNumero(numero) {
@@ -144,15 +182,17 @@ function renderGrid() {
   for (let n = inicio; n < fim; n++) {
     const status = statusDoNumero(n);
     const selecionado = numerosSelecionados.has(n);
-    const disabled = status !== "disponivel" ? "disabled" : "";
+    const disabled = status !== "disponivel" || sorteioRealizado ? "disabled" : "";
     const classeExtra = selecionado ? " numero-ticket--selecionado" : "";
     html += `<button class="numero-ticket numero-ticket--${status}${classeExtra}" data-numero="${n}" ${disabled}>${formatarNumero(n)}</button>`;
   }
   grid.innerHTML = html;
 
-  grid.querySelectorAll(".numero-ticket:not([disabled])").forEach((btn) => {
-    btn.addEventListener("click", () => alternarSelecao(Number(btn.dataset.numero)));
-  });
+  if (!sorteioRealizado) {
+    grid.querySelectorAll(".numero-ticket:not([disabled])").forEach((btn) => {
+      btn.addEventListener("click", () => alternarSelecao(Number(btn.dataset.numero)));
+    });
+  }
 
   renderPaginacao();
 }
@@ -328,6 +368,12 @@ function initMenuMobile() {
 function initEventos() {
   document.getElementById("fecharModalReserva").addEventListener("click", fecharModalReserva);
   document.getElementById("fecharModalPagamento").addEventListener("click", fecharModalPagamento);
+  document.getElementById("fecharModalVencedores").addEventListener("click", () => {
+    document.getElementById("modalVencedores").hidden = true;
+  });
+  document.getElementById("btnVerVencedoresBanner").addEventListener("click", () => {
+    document.getElementById("modalVencedores").hidden = false;
+  });
   document.getElementById("formReserva").addEventListener("submit", confirmarReserva);
   document.getElementById("btnCopiarPix").addEventListener("click", copiarChavePix);
 
@@ -359,6 +405,7 @@ function initEventos() {
 
 async function init() {
   await aplicarConfigRemota();
+  await verificarSorteio();
 
   preencherConfigEstatico();
   preencherCartas();

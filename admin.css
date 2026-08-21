@@ -111,6 +111,7 @@ button { font-family: inherit; cursor: pointer; }
   display: inline-block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em;
   background: var(--parchment-deep); color: var(--muted); padding: 2px 6px; border-radius: 4px; margin-left: 4px; cursor: help;
 }
+
 .admin__table .acoes { display: flex; gap: 6px; }
 
 /* ---------- CONFIG FORM ---------- */
@@ -139,6 +140,7 @@ button { font-family: inherit; cursor: pointer; }
   background: var(--white); border-radius: 12px; padding: 26px; max-width: 340px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
 }
 .modal-confirm p { margin: 0 0 18px; font-size: 0.95rem; }
+.sorteio-ok { color: var(--teal); font-weight: 600; margin-bottom: 16px; }
 .modal-confirm__actions { display: flex; gap: 10px; justify-content: flex-end; }
 
 @media (max-width: 640px) {

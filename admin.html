@@ -37,6 +37,7 @@
     <nav class="admin__tabs">
       <button class="admin__tab" data-tab="compradores" aria-current="true">Compradores</button>
       <button class="admin__tab" data-tab="config">Configurações</button>
+      <button class="admin__tab" data-tab="sorteio">Sorteio</button>
     </nav>
     <button class="btn btn--outline btn--sm" id="btnLogout">Sair</button>
   </header>
@@ -147,6 +148,26 @@
         <p class="config-form__msg" id="configMsg" hidden></p>
         <button type="submit" class="btn btn--solid">Salvar configurações</button>
       </form>
+    </section>
+
+    <!-- ---------- ABA: SORTEIO ---------- -->
+    <section class="admin__panel" id="painelSorteio" hidden>
+      <p class="admin__panel-intro">
+        O sorteio escolhe 3 números <strong>entre os que já estão marcados como "Vendido"</strong> no
+        Firestore neste exato momento — não é uma lista fixa, é lido ao vivo quando você clica no botão.
+        Depois de realizado, o site mostra os ganhadores num popup e trava a compra de novos números
+        automaticamente (o site continua no ar normalmente).
+      </p>
+
+      <div id="sorteioStatusVazio">
+        <button class="btn btn--solid" id="btnRealizarSorteio">🎲 Realizar sorteio agora</button>
+      </div>
+
+      <div id="sorteioResultado" hidden>
+        <p class="sorteio-ok">✅ Sorteio já realizado. O popup de ganhadores está ativo no site.</p>
+        <div id="tabelaVencedoresAdmin" class="admin__table-wrap"></div>
+        <button class="btn btn--outline btn--sm" id="btnReabrirVendas" style="margin-top: 16px;">Reabrir vendas (desfazer sorteio)</button>
+      </div>
     </section>
 
   </main>

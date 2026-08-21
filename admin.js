@@ -9,6 +9,9 @@ import {
   liberarNumero,
   buscarConfigRemota,
   salvarConfigRemota,
+  buscarSorteio,
+  realizarSorteio,
+  reabrirVendas,
 } from "./firebase.js";
 
 let compradoresCache = [];
@@ -20,28 +23,15 @@ function initAuth() {
   console.log("[DIAG] initAuth() chamado — registrando observador de autenticação...");
 
   observarAutenticacao((user) => {
-  console.log("[DIAG] observarAutenticacao disparou. Usuário:", user ? user.email : "nenhum (deslogado)");
+    console.log("[DIAG] observarAutenticacao disparou. Usuário:", user ? user.email : "nenhum (deslogado)");
+    document.getElementById("loginScreen").hidden = !!user;
+    document.getElementById("adminScreen").hidden = !user;
+    if (user) {
+      console.log("[DIAG] Usuário autenticado, chamando initPainel()...");
+      initPainel().catch((err) => console.error("[DIAG] ERRO dentro de initPainel():", err));
+    }
+  });
 
-  const login = document.getElementById("loginScreen");
-  const painel = document.getElementById("adminScreen");
-
-  if (user) {
-    login.style.display = "none";
-    painel.style.display = "block";
-    painel.hidden = false;
-
-    window.scrollTo(0, 0);
-
-    console.log("[DIAG] Usuário autenticado, chamando initPainel()...");
-    initPainel().catch((err) =>
-      console.error("[DIAG] ERRO dentro de initPainel():", err)
-    );
-  } else {
-    login.style.display = "flex";
-    painel.style.display = "none";
-    painel.hidden = true;
-  }
-});
   document.getElementById("formLogin").addEventListener("submit", async (e) => {
     e.preventDefault();
     console.log("[DIAG] Formulário de login enviado.");
@@ -74,6 +64,7 @@ function initTabs() {
       const alvo = tab.dataset.tab;
       document.getElementById("painelCompradores").hidden = alvo !== "compradores";
       document.getElementById("painelConfig").hidden = alvo !== "config";
+      document.getElementById("painelSorteio").hidden = alvo !== "sorteio";
     });
   });
 }
@@ -140,7 +131,7 @@ function renderTabela() {
     lista = lista.filter((c) => String(c.numero) === String(Number(numeroFiltro)));
   }
 
-const tbody = document.getElementById("tabelaCompradores");
+  const tbody = document.getElementById("tabelaCompradores");
   if (!lista.length) {
     tbody.innerHTML = somentePendentes
       ? `<tr><td colspan="7" class="admin__vazio">Nenhum pagamento pendente de confirmação. 🎉</td></tr>`
@@ -314,6 +305,71 @@ async function initConfigForm() {
 }
 
 /* ============================================================
+   SORTEIO
+   ============================================================ */
+function renderVencedoresAdmin(vencedores) {
+  const wrap = document.getElementById("tabelaVencedoresAdmin");
+  wrap.innerHTML = `
+    <table class="admin__table">
+      <thead><tr><th>Número</th><th>Nome</th><th>WhatsApp</th><th>Prêmio</th></tr></thead>
+      <tbody>
+        ${vencedores
+          .map(
+            (v) => `
+          <tr>
+            <td>${formatarNumero(v.numero)}</td>
+            <td>${v.nome || "—"}</td>
+            <td>${v.whatsapp || "—"}</td>
+            <td>${v.premioNome}</td>
+          </tr>`
+          )
+          .join("")}
+      </tbody>
+    </table>`;
+}
+
+async function carregarStatusSorteio() {
+  const sorteio = await buscarSorteio();
+  const vazio = document.getElementById("sorteioStatusVazio");
+  const resultado = document.getElementById("sorteioResultado");
+
+  if (sorteio && sorteio.realizado) {
+    vazio.hidden = true;
+    resultado.hidden = false;
+    renderVencedoresAdmin(sorteio.vencedores || []);
+  } else {
+    vazio.hidden = false;
+    resultado.hidden = true;
+  }
+}
+
+function initSorteioForm() {
+  document.getElementById("btnRealizarSorteio").addEventListener("click", () => {
+    confirmarAcao(
+      "Realizar o sorteio agora? Isso vai escolher 3 números vendidos aleatoriamente, distribuir os prêmios e travar a compra de novos números no site. Essa ação deve ser feita só uma vez, no dia oficial do sorteio.",
+      async () => {
+        try {
+          await realizarSorteio();
+          await carregarStatusSorteio();
+        } catch (err) {
+          alert(err.message || "Não foi possível realizar o sorteio.");
+        }
+      }
+    );
+  });
+
+  document.getElementById("btnReabrirVendas").addEventListener("click", () => {
+    confirmarAcao(
+      "Reabrir as vendas? Isso apaga o resultado do sorteio do site (o popup de ganhadores para de aparecer) e libera a compra de números de novo. Use só se o sorteio foi feito por engano.",
+      async () => {
+        await reabrirVendas();
+        await carregarStatusSorteio();
+      }
+    );
+  });
+}
+
+/* ============================================================
    INICIALIZAÇÃO DO PAINEL (pós-login)
    ============================================================ */
 let painelIniciado = false;
@@ -331,6 +387,8 @@ async function initPainel() {
   await carregarCompradores();
   console.log("[DIAG] Compradores carregados. Carregando formulário de configuração...");
   await initConfigForm();
+  initSorteioForm();
+  await carregarStatusSorteio();
   console.log("[DIAG] initPainel() concluído com sucesso.");
 
   document.getElementById("filtroTexto").addEventListener("input", renderTabela);

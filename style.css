@@ -369,7 +369,7 @@ input { font-family: inherit; }
 .rifa__pagination span { font-family: var(--font-mono); font-size: 0.85rem; color: rgba(248,244,234,0.7); }
 
 .numero-ticket--selecionado {
-  border-style: solid; border-color: var(--brass); background: rgba(184,134,58,0.3); color: var(--brass-light);
+  border-style: solid; border-color: var(--teal-light); background: rgba(29,107,87,0.35); color: var(--parchment);
 }
 
 .selecao-bar {
@@ -384,11 +384,34 @@ input { font-family: inherit; }
 .selecao-bar__resumo { font-family: var(--font-mono); color: var(--parchment); font-size: 0.95rem; }
 .selecao-bar__acoes { display: flex; gap: 10px; }
 
+.rifa__encerrada {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  background: rgba(184,134,58,0.14); border: 1px solid var(--brass); border-radius: var(--radius-m);
+  padding: 16px 20px; margin: 0 0 28px; color: var(--parchment); font-size: 0.95rem;
+}
+
 .modal__numeros-lista {
   font-family: var(--font-mono); font-size: 0.95rem; color: var(--ink-text);
   background: var(--parchment-deep); border-radius: var(--radius-s); padding: 10px 14px; margin: 0 0 16px;
   word-break: break-word;
 }
+
+.modal--vencedores { max-width: 480px; text-align: center; }
+.modal--vencedores h3 { font-size: 1.6rem; }
+.vencedores-lista { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; text-align: left; }
+.vencedor-item {
+  display: flex; align-items: center; gap: 14px; background: var(--white);
+  border: 1px solid var(--line); border-radius: var(--radius-m); padding: 14px 16px;
+}
+.vencedor-item__numero {
+  font-family: var(--font-mono); font-weight: 700; font-size: 1.1rem; color: var(--brass);
+  background: rgba(184,134,58,0.12); border-radius: 8px; padding: 6px 12px; flex-shrink: 0;
+}
+.vencedor-item__info { display: flex; flex-direction: column; gap: 2px; }
+.vencedor-item__nome { font-weight: 600; color: var(--ink-text); }
+.vencedor-item__premio { font-size: 0.85rem; color: var(--muted); }
+
+.numero-ticket:disabled.numero-ticket--sorteio-encerrado { opacity: 0.5; cursor: not-allowed; }
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(15,30,51,0.6); backdrop-filter: blur(2px);
   display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px;

@@ -28,7 +28,7 @@ import {
   where,
   onSnapshot,
   serverTimestamp,
-    writeBatch,
+  writeBatch,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {
   getAuth,
@@ -206,6 +206,72 @@ async function salvarConfigRemota(dados) {
   await setDoc(ref, { ...dados, atualizadoEm: serverTimestamp() }, { merge: true });
 }
 
+// ---------- SORTEIO ----------
+// Guarda o resultado do sorteio em config/sorteio. Enquanto esse documento
+// não existir (ou tiver realizado: false), o site funciona normalmente.
+// Depois de realizado, o site mostra o popup de ganhadores e trava a compra
+// de novos números — sem precisar tirar o site do ar.
+
+const PREMIOS_SORTEIO = [
+  { id: "perfume", nome: "Perfume Yara Candy (Lattafa, 50ml)" },
+  { id: "oculos-vermelho", nome: "Óculos esportivo — lente vermelha" },
+  { id: "oculos-azul", nome: "Óculos esportivo — lente azul" },
+];
+
+/** Busca o resultado do sorteio, se já tiver sido realizado. */
+async function buscarSorteio() {
+  const ref = doc(db, "config", "sorteio");
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data() : null;
+}
+
+/** Painel admin: sorteia 3 números vendidos de verdade (lidos agora do Firestore),
+ *  distribui os 3 prêmios aleatoriamente entre eles, salva o resultado e passa
+ *  a bloquear novas compras no site. */
+async function realizarSorteio() {
+  const ref = collection(db, "numeros");
+  const snap = await getDocs(ref);
+  const vendidos = [];
+  snap.forEach((docSnap) => {
+    const data = docSnap.data();
+    if (data.status === "vendido") vendidos.push(data);
+  });
+
+  if (vendidos.length < 3) {
+    throw new Error(`Só há ${vendidos.length} número(s) vendido(s) — é preciso ter pelo menos 3 para sortear.`);
+  }
+
+  // Embaralha os vendidos e pega os 3 primeiros (sorteio justo, sem viés)
+  const embaralhados = [...vendidos].sort(() => Math.random() - 0.5);
+  const sorteados = embaralhados.slice(0, 3);
+
+  // Embaralha os prêmios também, pra distribuição não seguir nenhuma ordem fixa
+  const premiosEmbaralhados = [...PREMIOS_SORTEIO].sort(() => Math.random() - 0.5);
+
+  const vencedores = sorteados.map((comprador, i) => ({
+    numero: comprador.numero,
+    nome: comprador.nome,
+    whatsapp: comprador.whatsapp,
+    premioId: premiosEmbaralhados[i].id,
+    premioNome: premiosEmbaralhados[i].nome,
+  }));
+
+  const sorteioRef = doc(db, "config", "sorteio");
+  await setDoc(sorteioRef, {
+    realizado: true,
+    vencedores,
+    dataSorteio: serverTimestamp(),
+  });
+
+  return vencedores;
+}
+
+/** Painel admin: desfaz o sorteio (volta a liberar a compra de números). Usar só em caso de engano. */
+async function reabrirVendas() {
+  const ref = doc(db, "config", "sorteio");
+  await setDoc(ref, { realizado: false }, { merge: true });
+}
+
 // ---------- AUTENTICAÇÃO (PAINEL ADMIN) ----------
 
 function loginAdmin(email, senha) {
@@ -233,6 +299,9 @@ export {
   listarCompradores,
   buscarConfigRemota,
   salvarConfigRemota,
+  buscarSorteio,
+  realizarSorteio,
+  reabrirVendas,
   loginAdmin,
   logoutAdmin,
   observarAutenticacao,
