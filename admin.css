@@ -141,6 +141,9 @@ button { font-family: inherit; cursor: pointer; }
 }
 .modal-confirm p { margin: 0 0 18px; font-size: 0.95rem; }
 .sorteio-ok { color: var(--teal); font-weight: 600; margin-bottom: 16px; }
+.premio-edit-input {
+  width: 100%; min-width: 220px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); font-size: 0.85rem;
+}
 .modal-confirm__actions { display: flex; gap: 10px; justify-content: flex-end; }
 
 @media (max-width: 640px) {

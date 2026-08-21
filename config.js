@@ -75,7 +75,7 @@ const CONFIG = {
   // Edite, adicione ou remova itens livremente — os cards se ajustam automaticamente.
   premios: [
     {
-      titulo: "Perfume Yara Candy — Lattafa (50ml)",
+      titulo: "Perfume Yara Candy — Lattafa (30ml)",
       descricao: "Eau de Parfum feminino da linha Yara, da Lattafa, com saída cítrica de groselha preta e tangerina verde, coração adocicado de morango e gardênia, e fundo de baunilha, âmbar, almíscar e madeira de sândalo.",
       imagem: "assets/img/premio-perfume.jpg",
     },
@@ -107,7 +107,7 @@ const CONFIG = {
     },
     {
       pergunta: "Como e quando será feito o sorteio?",
-      resposta: "O sorteio ocorrera dia 20/08, por meio de uma live no instagram, perfil: gs_zorzetti"
+      resposta: "⚠️ EDITAR — descreva aqui a data prevista e o método do sorteio (ex: Loteria Federal, live no Instagram, etc.)."
     },
     {
       pergunta: "O que acontece se eu reservar um número e não pagar?",

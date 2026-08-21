@@ -11,6 +11,7 @@ import {
   salvarConfigRemota,
   buscarSorteio,
   realizarSorteio,
+  atualizarVencedores,
   reabrirVendas,
 } from "./firebase.js";
 
@@ -307,25 +308,50 @@ async function initConfigForm() {
 /* ============================================================
    SORTEIO
    ============================================================ */
+let vencedoresAtuais = [];
+
 function renderVencedoresAdmin(vencedores) {
+  vencedoresAtuais = JSON.parse(JSON.stringify(vencedores));
   const wrap = document.getElementById("tabelaVencedoresAdmin");
   wrap.innerHTML = `
     <table class="admin__table">
-      <thead><tr><th>Número</th><th>Nome</th><th>WhatsApp</th><th>Prêmio</th></tr></thead>
+      <thead><tr><th>Número</th><th>Nome</th><th>WhatsApp</th><th>Prêmio (editável)</th></tr></thead>
       <tbody>
-        ${vencedores
+        ${vencedoresAtuais
           .map(
-            (v) => `
+            (v, i) => `
           <tr>
             <td>${formatarNumero(v.numero)}</td>
             <td>${v.nome || "—"}</td>
             <td>${v.whatsapp || "—"}</td>
-            <td>${v.premioNome}</td>
+            <td><input type="text" class="premio-edit-input" data-index="${i}" value="${v.premioNome}"></td>
           </tr>`
           )
           .join("")}
       </tbody>
-    </table>`;
+    </table>
+    <button class="btn btn--solid btn--sm" id="btnSalvarPremios" style="margin-top: 14px;">Salvar alterações no texto dos prêmios</button>
+    <p class="config-form__msg" id="premiosEditMsg" hidden></p>`;
+
+  wrap.querySelectorAll(".premio-edit-input").forEach((input) => {
+    input.addEventListener("input", () => {
+      vencedoresAtuais[Number(input.dataset.index)].premioNome = input.value;
+    });
+  });
+
+  document.getElementById("btnSalvarPremios").addEventListener("click", async () => {
+    const msg = document.getElementById("premiosEditMsg");
+    try {
+      await atualizarVencedores(vencedoresAtuais);
+      msg.textContent = "Salvo! O popup do site já mostra o texto novo.";
+      msg.className = "config-form__msg config-form__msg--ok";
+      msg.hidden = false;
+    } catch (err) {
+      msg.textContent = "Não foi possível salvar. Tente de novo.";
+      msg.className = "config-form__msg config-form__msg--erro";
+      msg.hidden = false;
+    }
+  });
 }
 
 async function carregarStatusSorteio() {

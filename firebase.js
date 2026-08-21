@@ -213,7 +213,7 @@ async function salvarConfigRemota(dados) {
 // de novos números — sem precisar tirar o site do ar.
 
 const PREMIOS_SORTEIO = [
-  { id: "perfume", nome: "Perfume Yara Candy (Lattafa, 50ml)" },
+  { id: "perfume", nome: "Perfume Yara Candy (Lattafa, 30ml)" },
   { id: "oculos-vermelho", nome: "Óculos esportivo — lente vermelha" },
   { id: "oculos-azul", nome: "Óculos esportivo — lente azul" },
 ];
@@ -266,6 +266,13 @@ async function realizarSorteio() {
   return vencedores;
 }
 
+/** Painel admin: corrige o texto de um prêmio já sorteado (ex: erro de digitação),
+ *  sem sortear de novo — mantém os mesmos 3 números ganhadores. */
+async function atualizarVencedores(vencedores) {
+  const ref = doc(db, "config", "sorteio");
+  await setDoc(ref, { vencedores }, { merge: true });
+}
+
 /** Painel admin: desfaz o sorteio (volta a liberar a compra de números). Usar só em caso de engano. */
 async function reabrirVendas() {
   const ref = doc(db, "config", "sorteio");
@@ -301,6 +308,7 @@ export {
   salvarConfigRemota,
   buscarSorteio,
   realizarSorteio,
+  atualizarVencedores,
   reabrirVendas,
   loginAdmin,
   logoutAdmin,
